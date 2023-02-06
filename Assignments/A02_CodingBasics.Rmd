@@ -1,6 +1,6 @@
 ---
 title: "Assignment 2: Coding Basics"
-author: "Student Name"
+author: "Srishti Mutha"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -32,11 +32,16 @@ This exercise accompanies the lessons in Environmental Data Analytics on coding 
 
 ```{r}
 #1. 
+sequence1 <- seq(1,100,4) #using sequence code and assigning it the name sequence1
+sequence1 
+
 
 #2. 
+mean(sequence1) #generating mean using code mean(sequence1)
+median(sequence1) #generating median using code median(sequence1)
 
 #3. 
-
+mean(sequence1)>median(sequence1) #determining if mean is greater than median
 ```
 
 ## Basics Day 2
@@ -50,21 +55,45 @@ This exercise accompanies the lessons in Environmental Data Analytics on coding 
 8.  Label the columns of your data frame with informative titles.
 
 ```{r}
+students <- c('Cherry','Sam','Joe','Fin') # it is a string vector
+scores<-c(80,88,90,20) # it is integar vector
+pass<-ifelse(scores>50,'Pass','fail')
+students
+scores
+pass
 
+table<-data.frame(students, scores, pass) #generating the table using cod
+table
 ```
 
 9.  QUESTION: How is this data frame different from a matrix?
 
-> Answer:
+> Answer:Data frame can have different classes of data while a matrix can only have a single class of data.
 
 10. Create a function with an if/else statement. Your function should take a **vector** of test scores and print (not return) whether a given test score is a passing grade of 50 or above (TRUE or FALSE). You will need to choose either the `if` and `else` statements or the `ifelse` statement. 
 
 11. Apply your function to the vector with test scores that you created in number 5.
 
 ```{r}
+scores_and_print<-function(x)
+{
+  ifelse(x>50, 'TRUE','FALSE')
+}
+scores_and_print(scores)
 
+#Tried the 'if' and 'else' statements but this error occured - Error in if (x > 50) { : the condition has length > 1
+
+#scores_result<-function(x)
+
+ # if(x>50) {
+   # print('TRUE')
+ # } else {
+  #  print('FALSE')
+#  }
+
+#scores_result(scores)
 ```
 
 12. QUESTION: Which option of `if` and `else` vs. `ifelse` worked? Why?
 
-> Answer:
+> Answer:The if/else function didnot work as it only checks one vector at a time whereas ifesle function checks each vector.
