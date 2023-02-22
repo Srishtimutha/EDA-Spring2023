@@ -1,8 +1,12 @@
 ---
-title: "Assignment 4: Data Wrangling"
-author: "Student Name"
+title: 'Assignment 4: Data Wrangling'
+author: "Srishti Mutha"
 date: "Spring 2023"
-output: pdf_document
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
 geometry: margin=2.54cm
 ---
 
@@ -12,6 +16,7 @@ geometry: margin=2.54cm
 
 #install.packages('formatR')
 knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
+
 ```
 
 
@@ -41,12 +46,23 @@ The completed exercise is due on Friday, Feb 20th @ 5:00pm.
 
 ```{r, message = FALSE}
 #1a 
-
+library(tidyverse)
+library(lubridate)
+library(here)
 #1b 
-
+getwd()
+  
 #1c 
+EPAPM19 <- read.csv("./Data/Raw/EPAair_PM25_NC2019_raw.csv", stringsAsFactors = TRUE)
+EPAPM18 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv", stringsAsFactors = TRUE)
+EPAO319 <- read.csv("./Data/Raw/EPAair_O3_NC2019_raw.csv",  stringsAsFactors = TRUE)
+EPAO318 <- read.csv("./Data/Raw/EPAair_O3_NC2018_raw.csv", , stringsAsFactors = TRUE)
 
 #2 
+glimpse(EPAPM19)
+glimpse(EPAPM18)
+glimpse(EPAO319)
+glimpse(EPAO318)
 
 ```
 
@@ -63,12 +79,23 @@ The completed exercise is due on Friday, Feb 20th @ 5:00pm.
 
 ```{r}
 #3
-
+EPAPM19$Date <-mdy(EPAPM19$Date)
+EPAPM18$Date <-mdy(EPAPM18$Date)
+EPAO319$Date <- mdy(EPAO319$Date)
+EPAO318$Date <- mdy(EPAO318$Date)
 #4
-
+EPAPM19_select <- select(EPAPM19, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+EPAPM18_select <- select(EPAPM18, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+EPAO319_select <- select(EPAO319, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+EPAO318_select <- select(EPAO318, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
 #5
-
+EPAPM19_select$AQS_PARAMETER_DESC <- "PM2.5"
+EPAPM18_select$AQS_PARAMETER_DESC <- "PM2.5"
 #6
+write.csv(EPAPM19_select, "./Data/Processed/EPAPM19_Processed.csv")
+write.csv(EPAPM18_select, "./Data/Processed/EPAPM18_Processed.csv")
+write.csv(EPAO318_select, "./Data/Processed/EPAO318_Processed.csv")
+write.csv(EPAO319_select, "./Data/Processed/EPAO319_Processed.csv")
 
 ```
 
@@ -95,14 +122,30 @@ The completed exercise is due on Friday, Feb 20th @ 5:00pm.
 
 ```{r}
 #7 
+binded_select <- rbind(EPAO318_select, EPAO319_select, EPAPM18_select, EPAPM19_select)
 
 #8 
-
+ binded_select1 <- binded_select %>%
+   filter((binded_select$Site.Name == "Linville Falls") | (binded_select$Site.Name== "Durham Armory") | (binded_select$Site.Name== "Leggett") | (binded_select$Site.Name== "Hattie Avenue")| (binded_select$Site.Name== "Clemmons Middle")| (binded_select$Site.Name== "Mendenhall School")| (binded_select$Site.Name== "Frying Pan Mountain")| (binded_select$Site.Name== "West Johnston Co.")| (binded_select$Site.Name== "Garinger High School")| (binded_select$Site.Name== "Castle Hayne")| (binded_select$Site.Name== "Pitt Agri. Center")| (binded_select$Site.Name== "Bryson City")| (binded_select$Site.Name== "Millbrook School")) %>%
+   group_by(Date, Site.Name, AQS_PARAMETER_DESC, COUNTY) %>%
+   mutate(mean_AQI = mean(binded_select$DAILY_AQI_VALUE), 
+          mean_latitude = mean(binded_select$SITE_LATITUDE), 
+          mean_longitude = mean(binded_select$SITE_LONGITUDE), 
+          Month = month(Date), 
+          Year = year(Date)) %>%
+   select(-c(SITE_LATITUDE, SITE_LONGITUDE, DAILY_AQI_VALUE))
+   
 #9
+
+binded_select1_spread <- pivot_wider(binded_select1, names_from = AQS_PARAMETER_DESC, values_from = mean_AQI) 
+# binded_select1_spread$Ozone <- as.numeric(binded_select1_spread$Ozone)
 
 #10
 
+dim(binded_select1_spread)
+
 #11
+write.csv(binded_select1, file = "./Data/Processed/EPAair_O3_PM25_NC1819_Processed.csv")
 
 ```
 
@@ -116,13 +159,18 @@ The completed exercise is due on Friday, Feb 20th @ 5:00pm.
 ```{r}
 
 #12
-
+binded_select1_summary <- binded_select1_spread %>% 
+  group_by(Site.Name, Month, Year) %>%
+ mutate(mean_AQI_ozone = mean(binded_select1_spread$Ozone), 
+        mean_AQI_PM = mean(binded_select1_spread$PM2.5)) %>%
+  drop_na(mean_AQI_ozone)
 
 #13
-
+dim(binded_select1_summary)
 
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
 
-> Answer: 
+> Answer: drop_na will let you remove rows where the column value is na 
+na.omit will not look at specefic value and delete all the values in all rows and columns where the value is na
